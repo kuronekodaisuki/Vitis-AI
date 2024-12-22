@@ -1,0 +1,8 @@
+{
+    "lib": "libvart-dpu-runner.so",
+    "filename": "yolov6m_pt.xmodel",
+    "kernel": [
+        "subgraph_ModelNNDct__ModelNNDct_CSPBepBackbone__module__CSPBepBackbone_backbone__RealVGGBlock_stem__Conv2d_conv__input_3"
+    ],
+    "target": "DPUCVDX8H_ISA1_F2W4_4PE"
+}

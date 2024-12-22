@@ -1,0 +1,32 @@
+model {
+  kernel {
+     mean: 0.0
+     mean: 0.0
+     mean: 0.0
+     scale: 0.00392156
+     scale: 0.00392156
+     scale: 0.00392156
+  }
+  model_type : YOLOv6
+  yolo_v6_param {
+    stride:32
+    stride:16
+    stride:8
+    max_boxes_num:30000
+    max_nms_num:300
+    num_classes: 80
+    anchorCnt: 1
+    bbox_layer_name: "inputs_11_fix"
+    bbox_layer_name: "inputs_7_fix"
+    bbox_layer_name: "inputs_3_fix"
+    cls_layer_name: "cls_preds__ModuleList_2__24287_fix"
+    cls_layer_name: "cls_preds__ModuleList_1__24154_fix"
+    cls_layer_name: "cls_preds__ModuleList_0__24021_fix"
+    conf_threshold: 0.3
+    nms_threshold: 0.65
+    test_mAP: false 
+    without_dfl: true 
+  }
+  use_graph_runner: false 
+}
+
