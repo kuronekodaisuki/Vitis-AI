@@ -17,6 +17,8 @@
 
 #include "common/common.h"
 
+using namespace std;
+
 class DPU
 {
 public :
@@ -41,18 +43,18 @@ protected :
     /// @param filepath 
     /// @param filenames 
     /// @return 
-    int8_t* PreProcess(const char* filepath, std::vector<string> filenames);
+    int8_t* PreProcess(string filepath, std::vector<string> filenames);
 
 protected :
-    vart::Runner* _runner;
-    std::vector<const xir::Tensor*> _inputTensors;
-    std::vector<const xir::Tensor*> _outputTensors;
+    std::unique_ptr<vart::Runner> _runner;
     TensorShape* _inputShapes;
     TensorShape* _outputShapes;
+    std::vector<const xir::Tensor*> _inputTensors;
+    std::vector<const xir::Tensor*> _outputTensors;
     std::vector<vart::TensorBuffer*> _inputBuffers;
     std::vector<vart::TensorBuffer*> _outputBuffers;
-    std::vector<std::unique_ptr<vart::TensorBuffer> _inputs;
-    std::vector<std::unique_ptr<vart::TensorBuffer> _outputs;
+    std::vector<std::unique_ptr<vart::TensorBuffer>> _inputs;
+    std::vector<std::unique_ptr<vart::TensorBuffer>> _outputs;
     int8_t* _inputBlob;
     int8_t* _results;
     int _outSize;

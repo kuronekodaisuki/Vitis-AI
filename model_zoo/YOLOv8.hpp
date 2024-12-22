@@ -1,6 +1,9 @@
 #include "DPU.hpp"
 #include "Object.h"
 
+#define NMS_THRESH 0.45f
+#define BBOX_CONF_THRESH 0.3f
+
 class YOLOv8: public DPU
 {
 public:

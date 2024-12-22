@@ -3,7 +3,6 @@
 
 DPU::DPU(): 
     _runner(nullptr), _inputBlob(nullptr), _results(nullptr),
-    _inputTensors(nullptr), _outputTensors(nullptr),
     _inputShapes(nullptr), _outputShapes(nullptr)
 {
 
@@ -35,18 +34,19 @@ bool DPU::Load(const char* model_filename)
     GraphInfo shapes = {_inputShapes, _outputShapes};
 
     getTensorShape(_runner.get(), &shapes, _inputTensors.size(), _outputTensors.size());
+    return true;
 }
 
-std::vector<string> DPU::Run(string images_filepath)
+std::vector<string> DPU::Run(const char* images_filepath)
 {
     std::vector<string> image_filenames;
     struct stat s;
-    lstat(images_filepath.c_str(), &s);
+    lstat(images_filepath, &s);
 
-    if (S_IS_DIR(s.st_mode))
+    if (S_ISDIR(s.st_mode))
     {
         // Enumerate image file names
-        DIR* dir = opendir(images_filepath.c_str());
+        DIR* dir = opendir(images_filepath);
         if (dir != nullptr)
         {
             for (struct dirent* entry = readdir(dir); entry != nullptr; entry = readdir(dir))
@@ -54,15 +54,9 @@ std::vector<string> DPU::Run(string images_filepath)
                 if ( entry->d_type == DT_REG || entry->d_type == DT_UNKNOWN)
                 {
                     string name = entry->d_name;
-                    string ext = name.substr(name.find_last(".") + 1);
-                    switch (ext)
+                    string ext = name.substr(name.find_last_of(".") + 1);
+                    if (ext == "JPEG" || ext == "jpeg" || ext == "JPG" || ext == "jpg" || ext == "PNG" || ext == "png")
                     {
-                        case "JPEG":
-                        case "JPG":
-                        case "jpeg":
-                        case "jpg":
-                        case "PNG":
-                        case "png":
                         image_filenames.push_back(name);
                     }
                 }
@@ -83,11 +77,11 @@ std::vector<string> DPU::Run(string images_filepath)
 
     std::vector<std::shared_ptr<xir::Tensor>> batchTensors;
     batchTensors.push_back(std::shared_ptr<xir::Tensor>(
-        xir::Tensor::create(_inputTensors[0]->get_name(), in_dims, xir::DataTyp{xir::DataType::XINT, 8u})));
-    _inputs.push_back(std::make_unique<CpuFlatTensorBuffer)(blob, batchTensors.back().get());
+        xir::Tensor::create(_inputTensors[0]->get_name(), in_dims, xir::DataType{xir::DataType::XINT, 8u})));
+    _inputs.push_back(std::make_unique<CpuFlatTensorBuffer>(_inputBlob, batchTensors.back().get()));
 
     batchTensors.push_back(std::shared_ptr<xir::Tensor>(
-        xir::Tensor::create(_outputTensors[0]->get_name(), out_dims, xir::DataTyp{xir::DataType::XINT, 8u})));
+        xir::Tensor::create(_outputTensors[0]->get_name(), out_dims, xir::DataType{xir::DataType::XINT, 8u})));
 
 
     // Run async
@@ -103,7 +97,7 @@ std::vector<string> DPU::Run(string images_filepath)
 
 int8_t* DPU::PreProcess(string filepath, std::vector<string> filenames)
 {
-    int width = _inShapes[0].width;
+    int width = _inputShapes[0].width;
     int height = _inputShapes[0].height;
     int inSize = _inputShapes[0].size;
     _outSize = _outputShapes[0].size;
@@ -123,11 +117,11 @@ int8_t* DPU::PreProcess(string filepath, std::vector<string> filenames)
         cv::resize(image, resized, cv::Size(width, height), 0, 0);
         for (int h = 0; h < height; h++)
         {
-            for (int w = 0; x < width; w++)
+            for (int w = 0; w < width; w++)
             {
                 for (int c = 0; c < 3; c++)
                 {
-                    blob[i * size + h * width * 3 + w * 3 + c] = (int8_t)((resized.at<cv::Vec3b>(h, w)[c] - mean[c]) * input_scale);
+                    _inputBlob[i * inSize + h * width * 3 + w * 3 + c] = (int8_t)((resized.at<cv::Vec3b>(h, w)[c] - mean[c]) * input_scale);
                 }
             }
         }
