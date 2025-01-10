@@ -6,7 +6,7 @@ DPU::DPU():
     _runner(nullptr), _inputBlob(nullptr), _results(nullptr),
     _inputShapes(nullptr), _outputShapes(nullptr)
 {
-    std::cout << "YOLOv8 Constructor";
+    std::cout << "Constructor";
 }
 
 DPU::~DPU()
